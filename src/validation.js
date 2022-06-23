@@ -1,5 +1,6 @@
 const validateEnum = function validateEnum(value) {
   var titleEnum = ["Mr", "Mrs", "Miss"];
+  
   if (titleEnum.includes(value)) {
     return true;
   }
