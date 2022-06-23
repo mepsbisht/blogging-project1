@@ -12,28 +12,36 @@ const createBlog = async function (req, res) {
       return res.status(400).send({ status: "false", msg: "Invalid Body." });
     }
     if (!validation.validateString(blog.authorId)) {
-      return res.status(400).send({ status: "false", msg: "Invalid AuthorId." });
+      return res
+        .status(400)
+        .send({ status: "false", msg: "Invalid AuthorId." });
     }
     if (!validation.validateString(blog.category)) {
-      return res.status(400).send({ status: "false", msg: "Invalid category." });
+      return res
+        .status(400)
+        .send({ status: "false", msg: "Invalid category." });
     }
 
     if (blog.subcategory != undefined) {
       blog.subcategory = validation.convertToArray(blog.subcategory);
       if (!blog.subcategory)
-        return res.status(400).send({ status: "false", msg: "Invalid Subcategory." });
+        return res
+          .status(400)
+          .send({ status: "false", msg: "Invalid Subcategory." });
     }
 
     if (blog.tags != undefined) {
       blog.tags = validation.convertToArray(blog.tags);
       if (!blog.tags)
         return res.status(400).send({ status: "false", msg: "Invalid tags." });
-    } 
+    }
 
     if (blog.authorId) {
       let authorCount = await authorModel.find({ _id: blog.authorId }).count();
       if (authorCount <= 0) {
-        return res.status(400).send({ Status: "false", msg: "Invalid authorId." });
+        return res
+          .status(400)
+          .send({ Status: "false", msg: "Invalid authorId." });
       }
     } else {
       res.send("author is required");
@@ -73,6 +81,7 @@ const updateBlog = async function (req, res) {
       update,
       { new: true }
     );
+
     res.status(200).send({ data: updatedData });
   } catch (err) {
     res.status(500).send({
@@ -150,6 +159,10 @@ const deleteBlogByQuery = async function (req, res) {
   }
   if (req.query.subcategory) {
     searchCondition.subcategory = { $in: req.query.subcategory };
+  }
+  if (req.query.authorId != req.token.authorId) {
+  res.status(400).send({Status:"False",msg:"No such author exist"})
+
   }
   let deletedBlog = await blogsModel.updateMany(
     { searchCondition },

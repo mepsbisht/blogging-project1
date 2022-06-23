@@ -37,8 +37,6 @@ const convertToArray = function (value) {
   return false;
 };
 
-
-
 module.exports.validateEnum = validateEnum;
 module.exports.validateString = validateString;
 module.exports.convertToArray = convertToArray;
