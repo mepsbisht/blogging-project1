@@ -1,4 +1,8 @@
 const validateEnum = function validateEnum(value) {
+  if (!value) {
+    return false;
+  }
+
   var titleEnum = ["Mr", "Mrs", "Miss"];
   if (titleEnum.includes(value)) {
     return true;
@@ -9,6 +13,10 @@ const validateEnum = function validateEnum(value) {
 
 //maxLength = 100
 const validateString = function validateString(value) {
+  if (!value) {
+    return false;
+  }
+
   if (typeof value == "string") {
     return true;
   }
@@ -37,7 +45,20 @@ const convertToArray = function (value) {
   return false;
 };
 
+const validateEmail = function (value) {
+  let email = value;
+  let re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  let validEmail = re.test(email);
+
+  if (!validEmail) {
+    return false;
+  }
+
+  return true;
+};
+
 module.exports.validateEnum = validateEnum;
 module.exports.validateString = validateString;
 module.exports.convertToArray = convertToArray;
 module.exports.checkValue = checkValue;
+module.exports.validateEmail = validateEmail;

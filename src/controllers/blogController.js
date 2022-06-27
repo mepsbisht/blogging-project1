@@ -6,20 +6,16 @@ const createBlog = async function (req, res) {
   try {
     let blog = req.body;
     if (!validation.validateString(blog.title)) {
-      return res.status(400).send({ status: "false", msg: "Invalid title." });
+      return res.status(400).send({ status: false, msg: "Invalid title." });
     }
     if (!validation.validateString(blog.body)) {
-      return res.status(400).send({ status: "false", msg: "Invalid Body." });
+      return res.status(400).send({ status: false, msg: "Invalid Body." });
     }
     if (!validation.validateString(blog.authorId)) {
-      return res
-        .status(400)
-        .send({ status: "false", msg: "Invalid AuthorId." });
+      return res.status(400).send({ status: false, msg: "Invalid AuthorId." });
     }
     if (!validation.validateString(blog.category)) {
-      return res
-        .status(400)
-        .send({ status: "false", msg: "Invalid category." });
+      return res.status(400).send({ status: false, msg: "Invalid category." });
     }
 
     if (blog.subcategory != undefined) {
@@ -27,13 +23,13 @@ const createBlog = async function (req, res) {
       if (!blog.subcategory)
         return res
           .status(400)
-          .send({ status: "false", msg: "Invalid Subcategory." });
+          .send({ status: false, msg: "Invalid Subcategory." });
     }
 
     if (blog.tags != undefined) {
       blog.tags = validation.convertToArray(blog.tags);
       if (!blog.tags)
-        return res.status(400).send({ status: "false", msg: "Invalid tags." });
+        return res.status(400).send({ status: false, msg: "Invalid tags." });
     }
 
     if (blog.authorId) {
@@ -41,17 +37,19 @@ const createBlog = async function (req, res) {
       if (authorCount <= 0) {
         return res
           .status(400)
-          .send({ Status: "false", msg: "Invalid authorId." });
+          .send({ status: false, msg: "Invalid authorId." });
       }
     } else {
-      res.send("author is required");
+      return res
+        .status(400)
+        .send({ status: false, msg: "Author is required." });
     }
 
     let createdBlog = await blogsModel.create(blog);
     let blogPop = await createdBlog.populate("authorId");
     res.status(201).send(blogPop);
   } catch (err) {
-    return res.status(500).send({ msg: err.message });
+    return res.status(500).send({ status: false, msg: err.message });
   }
 };
 
@@ -62,7 +60,7 @@ const updateBlog = async function (req, res) {
 
     let checkData = await blogsModel.findOne({ _id: id, isDeleted: false });
     if (!checkData) {
-      return res.status(404).send({ status: "false", msg: "Not Found" });
+      return res.status(404).send({ status: false, msg: "Not Found" });
     }
 
     var update = {
@@ -82,10 +80,10 @@ const updateBlog = async function (req, res) {
       { new: true }
     );
 
-    res.status(200).send({ data: updatedData });
+    res.status(200).send({ status: true, data: updatedData });
   } catch (err) {
     res.status(500).send({
-      status: "false",
+      status: false,
       msg: err.message,
     });
   }
@@ -111,12 +109,12 @@ const getBlog = async function (req, res) {
 
     let findBlog = await blogsModel.find(searchCondition);
     if (!findBlog) {
-      res.status(404).send({ status: "False", msg: "Not Found" });
+      res.status(404).send({ status: false, msg: "Not Found" });
     }
-    res.status(200).send({ msg: findBlog });
+    res.status(200).send({ status: true, data: findBlog });
   } catch (err) {
     res.status(500).send({
-      status: "false",
+      status: false,
       msg: err.message,
     });
   }
@@ -130,7 +128,7 @@ const deleteBlog = async function (req, res) {
     let data = await blogsModel.findOne(query);
 
     if (!data) {
-      res.status(404).send({ Status: false, msg: "Not Found" });
+      res.status(404).send({ status: false, msg: "Not Found" });
     }
 
     await blogsModel.findOneAndUpdate(query, {
@@ -140,41 +138,53 @@ const deleteBlog = async function (req, res) {
     res.status(200).send();
   } catch (err) {
     res.status(500).send({
-      status: "false",
+      status: false,
       msg: err.message,
     });
   }
 };
 
 const deleteBlogByQuery = async function (req, res) {
-  searchCondition = { isdeleted: false, isPublished: false };
-  if (req.query.category) {
-    searchCondition.category = req.query.category;
-  }
-  if (req.query.authorId) {
-    searchCondition.authorId = req.query.authorId;
-  }
-  if (req.query.tags) {
-    searchCondition.tags = { $in: req.query.tags };
-  }
-  if (req.query.subcategory) {
-    searchCondition.subcategory = { $in: req.query.subcategory };
-  }
-  if (req.query.authorId != req.token.authorId) {
-  res.status(400).send({Status:"False",msg:"No such author exist"})
+  try {
+    searchCondition = {};
+    if (req.query.category) {
+      searchCondition.category = req.query.category;
+    }
+    if (req.query.authorId) {
+      searchCondition.authorId = req.query.authorId;
+    }
+    if (req.query.tags) {
+      searchCondition.tags = { $in: req.query.tags };
+    }
+    if (req.query.subcategory) {
+      searchCondition.subcategory = { $in: req.query.subcategory };
+    }
+    if (req.query.unpublished) {
+      searchCondition.isPublished = req.query.unpublished;
+    }
+    if (req.query.authorId != req.token.authorId) {
+      res.status(400).send({ status: false, msg: "Invalid author." });
+    }
 
-  }
-  let deletedBlog = await blogsModel.updateMany(
-    { searchCondition },
-    { $set: { isDeleted: true } }
-  );
-  res.send();
+    let data = await blogsModel.find(searchCondition);
+    if (!data) {
+      res.status(404).send({
+        status: false,
+        Msg: "Not Found",
+      });
+    }
 
-  let data = await blogsModel.find(searchCondition);
-  if (!data) {
-    res.status(404).send({
-      Status: "False",
-      Msg: "Not Found",
+    await blogsModel.updateMany(
+      { searchCondition },
+      { $set: { isDeleted: true } }
+    );
+    
+    res.status(200).send();
+  }
+  catch(err) {
+    res.status(500).send({
+      status: false,
+      msg: err.message,
     });
   }
 };

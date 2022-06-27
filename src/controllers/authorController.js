@@ -11,13 +11,20 @@ const createAuthor = async function (req, res) {
       .send({ status: "false", msg: "Please pass a valid title." });
   }
 
-  if (!validation.validateString(author.fname, 30)) {
+  if (!validation.validateEmail(author.fname)) {
     return res.status(400).send({
       status: "false",
-      msg: "Please enter a valid first name upto 30 chars.",
+      msg: "Please enter a valid first name.",
     });
   }
-  if (!validation.validateString(author.lname, 30)) {
+
+  if (!validation.validateString(author.fname)) {
+    return res.status(400).send({
+      status: "false",
+      msg: "Please enter a valid first name.",
+    });
+  }
+  if (!validation.validateString(author.lname)) {
     return res.status(400).send({
       status: "false",
       msg: "Please enter a valid last name name upto 30 chars.",
@@ -25,19 +32,29 @@ const createAuthor = async function (req, res) {
   }
 
   let createdAuthor = await authorModel.create(author);
-  res.send({
+  res.send({status:true,
     data: createdAuthor,
   });
 };
 
 const loginAuthor = async function (req, res) {
-  let userName = req.body.email;
-  let password = req.body.password;
+  let reqData = req.body;
+
+  if (!validation.validateEmail(reqData.email)) {
+    return res.status(400).send({ status: false, msg: "Invalid email." });
+  }
+
+  if (!validation.validateString(reqData.password)) {
+    return res.status(400).send({ status: false, msg: "Invalid password." });
+  }
+
+  let userName = reqData.email;
+  let password = reqData.password;
 
   let author = await authorModel.findOne({ email: userName, password: password });
   
   if (!author) {
-    return res.status(401).send({ Status: "False", msg: "Wrong Credentials" });
+    return res.status(401).send({ status: false, msg: "Wrong Credentials." });
   }
 
   let token = jwt.sign(
@@ -46,8 +63,9 @@ const loginAuthor = async function (req, res) {
     },
     "projectOne"
   );
-  res.setHeader("x-auth-token", token);
-  res.send({ status: true, token: token });
+
+  // res.setHeader("x-auth-token", token);
+  res.status(200).send({ status: true, token: token });
 };
 
 

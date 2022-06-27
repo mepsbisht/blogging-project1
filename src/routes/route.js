@@ -9,7 +9,6 @@ const blogController = require("../controllers/blogController.js");
 
 router.post(
   "/authors",
-  middleWare.validateEmail,
   authorController.createAuthor
 );
 router.post("/blogs", middleWare.authenticate, blogController.createBlog);
