@@ -11,13 +11,6 @@ const createAuthor = async function (req, res) {
       .send({ status: "false", msg: "Please pass a valid title." });
   }
 
-  if (!validation.validateEmail(author.fname)) {
-    return res.status(400).send({
-      status: "false",
-      msg: "Please enter a valid first name.",
-    });
-  }
-
   if (!validation.validateString(author.fname)) {
     return res.status(400).send({
       status: "false",
