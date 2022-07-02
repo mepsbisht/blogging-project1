@@ -11,16 +11,14 @@ const validateEnum = function validateEnum(value) {
   return false;
 };
 
-//maxLength = 100
 const validateString = function validateString(value) {
   if (!value) {
     return false;
   }
 
-  if (typeof value == "string") {
+  if (typeof value == "string" && value.trim().length != 0) {
     return true;
   }
-
   return false;
 };
 
@@ -46,9 +44,8 @@ const convertToArray = function (value) {
 };
 
 const validateEmail = function (value) {
-  let email = value;
   let re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-  let validEmail = re.test(email);
+  let validEmail = re.test(value);
 
   if (!validEmail) {
     return false;
@@ -57,8 +54,27 @@ const validateEmail = function (value) {
   return true;
 };
 
+const validatePassword = function (value) {
+  let re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  let validPassword = re.test(value);
+
+  if (!validPassword) {
+    return false;
+  }
+
+  return true;
+};
+
+const validaterequest = function (value) {
+  if (Object.keys(value).length == 0) {
+    return false;
+  } else return true;
+};
+
 module.exports.validateEnum = validateEnum;
 module.exports.validateString = validateString;
 module.exports.convertToArray = convertToArray;
 module.exports.checkValue = checkValue;
 module.exports.validateEmail = validateEmail;
+module.exports.validatePassword = validatePassword;
+module.exports.validaterequest = validaterequest;

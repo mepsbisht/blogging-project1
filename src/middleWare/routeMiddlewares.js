@@ -27,8 +27,7 @@ const authenticate = function (req, res, next) {
 
 const authoriseUpdate = async function (req, res, next) {
   try {
-    let token = req.headers["x-api-key"];
-    let decodedToken = jwt.verify(token, "projectOne");
+    
 
     let blogId = "";
     if (typeof req.params.blogId != "undefined") {
@@ -39,14 +38,17 @@ const authoriseUpdate = async function (req, res, next) {
 
     let checkData = await blogsModel.findOne({ _id: blogId, isDeleted: false });
     if (!checkData) {
-      return res.status(404).send({ status: false, msg: "Invalid blogId." });
+      return res.status(404).send({ status: false, msg: "Invalid blogId Or blog is deleted" });
     }
 
-    if (checkData.authorId != decodedToken.authorId) {
+    if (checkData.authorId != req.token.authorId) {
       return res
         .status(404)
         .send({ status: false, msg: "Authorization failed." });
     }
+
+    req.blog=checkData
+
     next();
   } catch (err) {
     return res
