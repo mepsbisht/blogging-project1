@@ -1,44 +1,58 @@
-# TOPIC: Authentication
+Radon
+Repository for backend cohort - Radon
 
-## Authentication with JWT
-- Token generation
-- Token verification
+Blogging Site Mini Project Requirement
+Phase I
+Models
+Author Model
+{ fname: { mandatory}, lname: {mandatory}, title: {mandatory, enum[Mr, Mrs, Miss]}, email: {mandatory, valid email, unique}, password: {mandatory} }
+Blogs Model
+{ title: {mandatory}, body: {mandatory}, authorId: {mandatory, refs to author model}, tags: {array of string}, category: {string, mandatory, examples: [technology, entertainment, life style, food, fashion]}, subcategory: {array of string, examples[technology-[web development, mobile development, AI, ML etc]] }, createdAt, updatedAt, deletedAt: {when the document is deleted}, isDeleted: {boolean, default: false}, publishedAt: {when the blog is published}, isPublished: {boolean, default: false}}
+Author APIs /authors
+Create an author - atleast 5 authors
+Create a author document from request body. Endpoint: BASE_URL/authors
+POST /blogs
+Create a blog document from request body. Get authorId in request body only.
 
-## Assignment
-- For this assignment you have to create a new branch - assignment/auth-1
-- Your user document should look like this
-```
- 	{
-    "_id" : ObjectId("6226e3d2b98f22b349ca58be"),
-    "firstName" : "Sabiha",
-    "lastName" : "Khan",
-    "mobile" : "9898909087",
-    "emailId" : "sk@gmail.com",
-    "password" : "password123",
-    "gender" : "female",
-	"isDeleted": false, //default value is false 
-    "age" : 12,
-    "createdAt" : ISODate("2022-03-08T05:04:18.737Z"),
-    "updatedAt" : ISODate("2022-03-08T05:04:18.737Z"),
-    "__v" : 0
-}
-```
+Make sure the authorId is a valid authorId by checking the author exist in the authors collection.
 
+Return HTTP status 201 on a succesful blog creation. Also return the blog document. The response should be a JSON object like this
 
-- Write a **POST api /users** to register a user from the user details in request body. 
-- Write a ***POST api /login** to login a user that takes user details - email and password from the request body. If the credentials don't match with any user's data return a suitable error.
-On successful login, generate a JWT token and return it in response body. Example 
-```
-{
- token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-}
-```
-- Write a **GET api /users/:userId** to fetch user details. Pass the userId as path param in the url. Check that request must contain **x-auth-token** header. If absent, return a suitable error.
-If present, check that the token is valid.
-- Write a **PUT api /users/:userId** to update user details. Pass the userId as path param in the url and update the attributes received in the request body. Check that request must contain **x-auth-token** header. If absent, return a suitable error.
-- Write a **DELETE api /users/:userId** that takes the userId in the path params and marks the isDeleted attribute for a user as true. Check that request must contain **x-auth-token** header. If absent, return a suitable error.
-- Once, all the apis are working fine, move the authentication related code in a middleware called auth.js
-- Add this middleware at route level in the routes where applicable.
+Create atleast 5 blogs for each author
 
+Return HTTP status 400 for an invalid request with a response body like this
 
-
+GET /blogs
+Returns all blogs in the collection that aren't deleted and are published
+Return the HTTP status 200 if any documents are found. The response structure should be like this
+If no documents are found then return an HTTP status 404 with a response like this
+Filter blogs list by applying filters. Query param can have any combination of below filters.
+By author Id
+By category
+List of blogs that have a specific tag
+List of blogs that have a specific subcategory example of a query url: blogs?filtername=filtervalue&f2=fv2
+PUT /blogs/:blogId
+Updates a blog by changing the its title, body, adding tags, adding a subcategory. (Assuming tag and subcategory received in body is need to be added)
+Updates a blog by changing its publish status i.e. adds publishedAt date and set published to true
+Check if the blogId exists (must have isDeleted false). If it doesn't, return an HTTP status 404 with a response body like this
+Return an HTTP status 200 if updated successfully with a body like this
+Also make sure in the response you return the updated blog document.
+DELETE /blogs/:blogId
+Check if the blogId exists( and is not deleted). If it does, mark it deleted and return an HTTP status 200 without any response body.
+If the blog document doesn't exist then return an HTTP status of 404 with a body like this
+DELETE /blogs?queryParams
+Delete blog documents by category, authorid, tag name, subcategory name, unpublished
+If the blog document doesn't exist then return an HTTP status of 404 with a body like this
+Phase II
+Add authentication and authroisation feature
+POST /login
+Allow an author to login with their email and password. On a successful login attempt return a JWT token contatining the authorId
+If the credentials are incorrect return a suitable error message with a valid HTTP status code
+Authentication
+Add an authorisation implementation for the JWT token that validates the token before every protected endpoint is called. If the validation fails, return a suitable error message with a corresponding HTTP status code
+Protected routes are create a blog, edit a blog, get the list of blogs, delete a blog(s)
+Set the token, once validated, in the request - x-api-key
+Use a middleware for authentication purpose.
+Authorisation
+Make sure that only the owner of the blogs is able to edit or delete the blog.
+In case of unauthorized access return an appropirate error message.
